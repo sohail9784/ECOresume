@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoResume · Free Green Resume & Portfolio Builder</title>
+    <meta name="description" content="Build beautiful, eco-themed resumes and portfolios for free. Add photos, certificates, and export to PDF or HTML instantly.">
+    <meta name="keywords" content="resume builder, portfolio maker, free resume, PDF resume, online CV, green resume">
+    <meta name="author" content="EcoResume">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/">
+    
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="EcoResume · Free Green Resume & Portfolio Builder">
+    <meta property="og:description" content="Build beautiful, eco-themed resumes and portfolios for free. Export to PDF or HTML instantly.">
+    <meta property="og:url" content="https://yourdomain.com/">
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    
+    <!-- html2pdf for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        /* ── Green‑White Theme ── */
+        :root {
+            --bg: #f0f7f0;
+            --card: #ffffff;
+            --green-dark: #1e6b3b;
+            --green-primary: #2e7d32;
+            --green-light: #4caf50;
+            --green-pale: #e8f5e9;
+            --green-hover: #1b5e20;
+            --text: #1e2b1e;
+            --text-muted: #4a5a4a;
+            --border: #c8e0c8;
+            --shadow: 0 8px 24px rgba(30, 60, 30, 0.10);
+            --radius: 16px;
+            --transition: 0.25s ease;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px 16px 40px;
+        }
+        
+        /* ── Header / Brand ── */
+        .site-header {
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            margin: 8px 0 16px;
+        }
+        .site-header h1 {
+            font-size: 22px;
+            color: var(--green-dark);
+            letter-spacing: -0.02em;
+        }
+        .site-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        /* ── Ad Containers ── */
+        .ad-container {
+            width: 100%;
+            max-width: 550px;
+            min-height: 90px;
+            background: #e8f0e8;
+            border: 1px dashed #b8d0b8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #7a9a7a;
+            overflow: hidden;
+        }
+        .ad-container ins.adsbygoogle {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .ad-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8aaa8a;
+            margin-bottom: 4px;
+            text-align: center;
+            width: 100%;
+            max-width: 550px;
+        }
+        .ad-container.sidebar-desktop {
+            display: none;
+        }
+        @media (min-width: 900px) {
+            .app-wrapper {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+                gap: 24px;
+                max-width: 900px;
+                width: 100%;
+            }
+            .ad-container.sidebar-desktop {
+                display: flex;
+                width: 160px;
+                min-height: 600px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 20px;
+            }
+            .main-column {
+                flex: 1;
+                max-width: 550px;
+            }
+        }
+        @media print {
+            .ad-container, .ad-label, .site-header, .site-footer, .cookie-banner {
+                display: none !important;
+            }
+        }
+        
+        /* ── A4 Card ── */
+        .a4-container {
+            width: 100%;
+            max-width: 550px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 32px 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            transition: box-shadow var(--transition);
+        }
+        /* ── Header ── */
+        .profile-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--green-pale);
+        }
+        .passport-photo-frame {
+            position: relative;
+            width: 95px;
+            height: 120px;
+            border: 2px dashed #a0c0a0;
+            background: var(--green-pale);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border var(--transition), background var(--transition);
+            flex-shrink: 0;
+        }
+        .passport-photo-frame:hover {
+            border-color: var(--green-primary);
+            background: #dcedc8;
+        }
+        .passport-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-placeholder {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .photo-placeholder svg {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 2px;
+            fill: currentColor;
+        }
+        .passport-photo-frame input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .identity-frame {
+            flex: 1;
+            min-width: 0;
+        }
+        .identity-frame input {
+            width: 100%;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 4px 0 6px;
+            outline: none;
+            background: transparent;
+            transition: border-color var(--transition);
+        }
+        .identity-frame input:focus {
+            border-bottom-color: var(--green-primary);
+        }
+        .identity-frame input::placeholder {
+            color: #b0c8b0;
+            font-weight: 500;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 15px;
+            margin-top: 12px;
+        }
+        .details-grid input {
+            font-size: 14px;
+            padding: 6px 0;
+            border: none;
+            border-bottom: 1px solid #dce8dc;
+            background: transparent;
+            outline: none;
+            transition: border-color 0.2s;
+            color: var(--text);
+        }
+        .details-grid input:focus {
+            border-bottom-color: var(--green-primary);
+        }
+        .details-grid input::placeholder {
+            color: #b8ceb8;
+            font-weight: 400;
+        }
+        /* ── Sections ── */
+        .section-header {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-header .badge {
+            background: var(--green-primary);
+            color: white;
+            font-size: 11px;
+            border-radius: 20px;
+            padding: 0 10px;
+            line-height: 20px;
+            font-weight: 600;
+        }
+        .entries-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fafffa;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px 12px 4px 16px;
+            transition: border var(--transition), box-shadow var(--transition);
+        }
+        .item-row:hover {
+            border-color: var(--green-light);
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.08);
+        }
+        .item-row input[type="text"] {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            padding: 10px 0;
+            outline: none;
+            color: var(--text);
+            min-width: 0;
+        }
+        .item-row input[type="text"]::placeholder {
+            color: #b8ceb8;
+        }
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .btn-utility {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            position: relative;
+            transition: background var(--transition), color var(--transition);
+            font-size: 18px;
+        }
+        .btn-utility:hover {
+            background: var(--green-pale);
+            color: var(--green-primary);
+        }
+        .btn-utility.has-file {
+            color: var(--green-dark);
+            background: #e6f3e6;
+        }
+        .btn-utility.has-file:hover {
+            background: #c8e6c9;
+        }
+        .btn-utility input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .add-row-trigger {
+            width: 100%;
+            padding: 10px;
+            background: var(--green-pale);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            color: var(--green-primary);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition);
+            margin-top: 4px;
+        }
+        .add-row-trigger:hover {
+            background: #dcedc8;
+            border-color: var(--green-light);
+            color: var(--green-dark);
+        }
+        .section-spacer {
+            margin-top: 24px;
+        }
+        /* ── Buttons ── */
+        .control-panel {
+            width: 100%;
+            max-width: 550px;
+            display: flex;
+            gap: 14px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            transition: all var(--transition);
+        }
+        .btn-action:active { transform: scale(0.97); }
+        .btn-share { background: #1e3a2e; }
+        .btn-share:hover { background: #0f2818; box-shadow: 0 6px 16px rgba(30,58,46,0.25); }
+        .btn-pdf { background: var(--green-primary); }
+        .btn-pdf:hover { background: var(--green-hover); box-shadow: 0 6px 16px rgba(46,125,50,0.30); }
+        /* ── Modal ── */
+        .preview-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20,40,20,0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .preview-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .preview-window {
+            background: var(--card);
+            width: 100%;
+            max-width: 650px;
+            height: 85vh;
+            border-radius: var(--radius);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.94);
+            transition: transform 0.3s ease;
+        }
+        .preview-overlay.open .preview-window {
+            transform: scale(1);
+        }
+        .preview-header {
+            padding: 14px 20px;
+            background: var(--green-pale);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .preview-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text);
+        }
+        .close-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all var(--transition);
+        }
+        .close-btn:hover {
+            background: var(--green-primary);
+            color: white;
+            border-color: var(--green-primary);
+        }
+        .preview-viewport {
+            flex: 1;
+            background: #d8e6d8;
+            overflow: auto;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .a4-preview-document {
+            background: white;
+            width: 100%;
+            min-width: 420px;
+            min-height: 636px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+            padding: 36px;
+            transform-origin: top center;
+            border-radius: 4px;
+        }
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e3a2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.20);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            z-index: 999;
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+        .hidden { display: none !important; }
+        
+        /* ── Footer ── */
+        .site-footer {
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            margin-top: 16px;
+            padding: 16px;
+            font-size: 12px;
+            color: #8aaa8a;
+            border-top: 1px solid #d0e0d0;
+        }
+        .site-footer a {
+            color: var(--green-primary);
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* ── Cookie Banner ── */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e3a2e;
+            color: white;
+            padding: 14px 20px;
+            font-size: 13px;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+        }
+        .cookie-banner.hidden-banner {
+            display: none;
+        }
+        .cookie-banner button {
+            background: var(--green-light);
+            border: none;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .cookie-banner a {
+            color: #a8d5a8;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <h1>🌿 EcoResume</h1>
+        <p>Free Green Resume & Portfolio Builder — Export to PDF or HTML instantly</p>
+    </header>
+    
+    <!-- Top Banner Ad -->
+    <div class="ad-label">Advertisement</div>
+    <div class="ad-container">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="app-wrapper">
+        <!-- Sidebar Ad (desktop only) -->
+        <div class="ad-container sidebar-desktop">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="2345678901"
+                 data-ad-format="vertical"
+                 data-full-width-responsive="false"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        
+        <div class="main-column">
+            <!-- A4 Canvas -->
+            <div class="a4-container">
+                <div class="profile-section">
+                    <div class="passport-photo-frame" onclick="document.getElementById('nativePhotoInput').click();">
+                        <div class="photo-placeholder" id="photoPlaceholder">
+                            <svg viewBox="0 0 24 24"><path d="M4 4h16v12H4V4zm2 2v8h12V6H6zm3 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm7 5H8v-1.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5V13z"/></svg>
+                            <div>Add Photo</div>
+                        </div>
+                        <img id="photoView" class="hidden" src="" alt="Passport Profile">
+                        <input type="file" id="nativePhotoInput" accept="image/*">
+                    </div>
+                    <div class="identity-frame">
+                        <input type="text" id="clientNameInput" placeholder="Enter Full Name" value="">
+                        <div class="details-grid">
+                            <input type="text" id="clientAge" placeholder="Age">
+                            <input type="text" id="clientSex" placeholder="Sex">
+                            <input type="tel" id="clientPhone" placeholder="Phone">
+                            <input type="email" id="clientEmail" placeholder="Gmail">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education Section -->
+                <div class="section-header">
+                    <span>🎓 Education</span>
+                    <span class="badge" id="eduCount">0</span>
+                </div>
+                <div class="entries-list" id="educationContainer"></div>
+                <button class="add-row-trigger" onclick="injectQualificationRow('education')">
+                    <span style="font-size:22px; font-weight:300;">+</span> Add Education
+                </button>
+
+                <!-- Mid-Content Ad -->
+                <div class="ad-label" style="margin-top: 24px;">Advertisement</div>
+                <div class="ad-container">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                         data-ad-slot="3456789012"
+                         data-ad-format="rectangle"
+                         data-full-width-responsive="true"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                </div>
+
+                <!-- Work Experience Section -->
+                <div class="section-header section-spacer">
+                    <span>💼 Work Experience</span>
+                    <span class="badge" id="expCount">0</span>
+                </div>
+                <div class="entries-list" id="experienceContainer"></div>
+                <button class="add-row-trigger" onclick="injectQualificationRow('experience')">
+                    <span style="font-size:22px; font-weight:300;">+</span> Add Work Experience
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="control-panel">
+                <button class="btn-action btn-share" onclick="generateClientPack('share')">🔗 Share (HTML)</button>
+                <button class="btn-action btn-pdf" onclick="generateClientPack('pdf')">⬇️ Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Banner Ad -->
+    <div class="ad-label" style="margin-top: 16px;">Advertisement</div>
+    <div class="ad-container">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="4567890123"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>© <span id="year"></span> EcoResume. Built with 💚 for job seekers everywhere.</p>
+        <p style="margin-top:6px;">
+            <a href="privacy.html" target="_blank">Privacy Policy</a> ·
+            <a href="terms.html" target="_blank">Terms of Use</a> ·
+            <a href="contact.html" target="_blank">Contact</a>
+        </p>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toastMessage"></div>
+
+    <!-- Preview Modal -->
+    <div class="preview-overlay" id="previewOverlayContainer">
+        <div class="preview-window">
+            <div class="preview-header">
+                <div class="preview-title" id="previewModalTitle">Document Preview</div>
+                <button class="close-btn" onclick="dismissModalPreview()">Close</button>
+            </div>
+            <div class="preview-viewport">
+                <div class="a4-preview-document" id="renderTargetA4"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cookie Consent Banner (Required for AdSense / GDPR) -->
+    <div class="cookie-banner hidden-banner" id="cookieBanner">
+        <span>We use cookies to improve your experience and serve personalized ads. 
+            <a href="privacy.html" target="_blank">Learn more</a>
+        </span>
+        <button onclick="acceptCookies()">Accept</button>
+    </div>
+
+    <script>
+        // Set copyright year
+        document.getElementById('year').textContent = new Date().getFullYear();
+        
+        // Cookie consent logic
+        function acceptCookies() {
+            localStorage.setItem('eco_cookie_consent', 'true');
+            document.getElementById('cookieBanner').classList.add('hidden-banner');
+        }
+        if (!localStorage.getItem('eco_cookie_consent')) {
+            document.getElementById('cookieBanner').classList.remove('hidden-banner');
+        }
+        
+        /* ── Application State ── */
+        const appState = {
+            photoStreamBase64: '',
+            qualifications: []
+        };
+
+        /* ── Helpers ── */
+        function showToast(msg, duration = 2800) {
+            const t = document.getElementById('toastMessage');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), duration);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        /* ── Init ── */
+        window.addEventListener('DOMContentLoaded', () => {
+            injectQualificationRow('education');
+            injectQualificationRow('experience');
+            setupIdentityEngine();
+            updateBadges();
+        });
+
+        function setupIdentityEngine() {
+            const photoInput = document.getElementById('nativePhotoInput');
+            photoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    appState.photoStreamBase64 = ev.target.result;
+                    document.getElementById('photoPlaceholder').style.display = 'none';
+                    const view = document.getElementById('photoView');
+                    view.src = ev.target.result;
+                    view.classList.remove('hidden');
+                    showToast('📸 Photo uploaded');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        /* ── Qualification Rows ── */
+        function injectQualificationRow(type) {
+            const containerId = type === 'education' ? 'educationContainer' : 'experienceContainer';
+            const container = document.getElementById(containerId);
+            const id = Date.now() + Math.random().toString(36).substr(2, 6);
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.id = `row-${id}`;
+            row.innerHTML = `
+                <input type="text" placeholder="${type === 'education' ? 'Degree / Institution' : 'Job Title / Company'}" class="qual-text-input">
+                <div class="action-group">
+                    <button class="btn-utility upload-trigger-btn" title="Upload Certificate File">
+                        📁
+                        <input type="file" accept="image/*,application/pdf" onchange="bindAttachmentStream(this, '${id}')">
+                    </button>
+                    <button class="btn-utility target-preview-btn" onclick="launchModalEngine('${id}')" title="Preview Certificate">👁️</button>
+                    <button class="btn-utility" onclick="destroyRowNode('${id}')" title="Remove Entry">✕</button>
+                </div>
+            `;
+            container.appendChild(row);
+            appState.qualifications.push({ id, type, textData: '', attachmentStream: '', fileMimeType: '' });
+            updateBadges();
+            setTimeout(() => row.querySelector('input[type="text"]')?.focus(), 50);
+        }
+
+        function destroyRowNode(nodeId) {
+            document.getElementById(`row-${nodeId}`)?.remove();
+            appState.qualifications = appState.qualifications.filter(item => item.id !== nodeId);
+            updateBadges();
+            showToast('🗑️ Removed');
+        }
+
+        function bindAttachmentStream(inputCtx, nodeId) {
+            const file = inputCtx.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const node = appState.qualifications.find(item => item.id === nodeId);
+                if (node) {
+                    node.attachmentStream = ev.target.result;
+                    node.fileMimeType = file.type;
+                    inputCtx.closest('.upload-trigger-btn').classList.add('has-file');
+                    showToast('📎 File attached');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateBadges() {
+            const eduCount = appState.qualifications.filter(q => q.type === 'education').length;
+            const expCount = appState.qualifications.filter(q => q.type === 'experience').length;
+            document.getElementById('eduCount').textContent = eduCount;
+            document.getElementById('expCount').textContent = expCount;
+        }
+
+        /* ── Preview Modal ── */
+        function launchModalEngine(nodeId) {
+            const node = appState.qualifications.find(item => item.id === nodeId);
+            const text = document.querySelector(`#row-${nodeId} .qual-text-input`)?.value || 'Unnamed';
+            document.getElementById('previewModalTitle').textContent = `Preview: ${text}`;
+            const canvas = document.getElementById('renderTargetA4');
+            canvas.innerHTML = '';
+            if (!node || !node.attachmentStream) {
+                canvas.innerHTML = `<div style="text-align:center; padding:40px; color:#8a9a8a;">No document attached.</div>`;
+            } else if (node.fileMimeType === 'application/pdf') {
+                canvas.innerHTML = `<object data="${node.attachmentStream}" type="application/pdf" style="width:100%; min-height:580px; border-radius:6px;"></object>`;
+            } else {
+                canvas.innerHTML = `<img src="${node.attachmentStream}" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+            }
+            document.getElementById('previewOverlayContainer').classList.add('open');
+        }
+
+        function dismissModalPreview() {
+            document.getElementById('previewOverlayContainer').classList.remove('open');
+        }
+
+        /* ── Full Document Builder ── */
+        function buildFullResumeHTML(name, age, sex, phone, email, photo, qualifications, isPdfMode = false) {
+            const education = qualifications.filter(q => q.type === 'education');
+            const experience = qualifications.filter(q => q.type === 'experience');
+
+            const photoHtml = photo ?
+                `<img src="${photo}" style="width:100px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #c8e0c8;">` :
+                `<div style="width:100px; height:130px; background:#eef6ee; border:1px solid #c8e0c8; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; color:#8a9a8a;">No Photo</div>`;
+
+            // Table of contents
+            let eduTOC = '';
+            education.forEach((q, idx) => {
+                const label = escapeHtml(q.textData) || 'Unspecified';
+                eduTOC += `<li><a href="#edu-${idx}" style="color:#2e7d32; text-decoration:underline;">${label}</a></li>`;
+            });
+            let expTOC = '';
+            experience.forEach((q, idx) => {
+                const label = escapeHtml(q.textData) || 'Unspecified';
+                expTOC += `<li><a href="#exp-${idx}" style="color:#2e7d32; text-decoration:underline;">${label}</a></li>`;
+            });
+
+            // Build certificate pages
+            let eduPages = '';
+            education.forEach((q, idx) => {
+                const label = escapeHtml(q.textData) || 'Unspecified';
+                let certContent = '';
+                if (q.attachmentStream) {
+                    if (q.fileMimeType === 'application/pdf') {
+                        if (isPdfMode) {
+                            certContent = `
+                                <div style="padding:30px; background:#f4faf4; border:1px dashed #2e7d32; border-radius:8px;">
+                                    <p style="font-size:16px; color:#1e2b1e; font-weight:bold; margin-bottom:8px;">📄 PDF Certificate</p>
+                                    <p style="font-size:13px; color:#4a5a4a;">Click the link below to view the original PDF.</p>
+                                    <a href="${q.attachmentStream}" target="_blank" style="display:inline-block; margin-top:15px; color:#2e7d32; font-weight:600; text-decoration:underline;">Open PDF &rarr;</a>
+                                </div>
+                            `;
+                        } else {
+                            certContent = `
+                                <object data="${q.attachmentStream}" type="application/pdf" style="width:100%; min-height:70vh; border-radius:6px;"></object>
+                                <p style="text-align:center; margin-top:12px; font-size:13px; color:#4a5a4a;">
+                                    <a href="${q.attachmentStream}" target="_blank" style="color:#2e7d32; font-weight:500;">📄 Open PDF in new tab</a>
+                                </p>
+                            `;
+                        }
+                    } else {
+                        certContent = `<img src="${q.attachmentStream}" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+                    }
+                } else {
+                    certContent = `<div style="padding:40px; background:#f8fcf8; border-radius:12px; text-align:center; color:#8a9a8a; border:2px dashed #dce8dc;">No certificate uploaded</div>`;
+                }
+                eduPages += `
+                    <div id="edu-${idx}" class="page section-break" style="page-break-after:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
+                        <h2 style="font-size:24px; color:#1e2b1e; margin-bottom:8px; text-align:center;">${label}</h2>
+                        <p style="color:#4a5a4a; font-size:14px; margin-bottom:24px;">Education Certificate</p>
+                        <div style="width:100%; max-width:700px; text-align:center;">${certContent}</div>
+                        <p style="margin-top:30px; font-size:13px; color:#8a9a8a;">— ${escapeHtml(name)} —</p>
+                    </div>
+                `;
+            });
+
+            let expPages = '';
+            experience.forEach((q, idx) => {
+                const label = escapeHtml(q.textData) || 'Unspecified';
+                let certContent = '';
+                if (q.attachmentStream) {
+                    if (q.fileMimeType === 'application/pdf') {
+                        if (isPdfMode) {
+                            certContent = `
+                                <div style="padding:30px; background:#f4faf4; border:1px dashed #2e7d32; border-radius:8px;">
+                                    <p style="font-size:16px; color:#1e2b1e; font-weight:bold; margin-bottom:8px;">📄 PDF Certificate</p>
+                                    <p style="font-size:13px; color:#4a5a4a;">Click the link below to view the original PDF.</p>
+                                    <a href="${q.attachmentStream}" target="_blank" style="display:inline-block; margin-top:15px; color:#2e7d32; font-weight:600; text-decoration:underline;">Open PDF &rarr;</a>
+                                </div>
+                            `;
+                        } else {
+                            certContent = `
+                                <object data="${q.attachmentStream}" type="application/pdf" style="width:100%; min-height:70vh; border-radius:6px;"></object>
+                                <p style="text-align:center; margin-top:12px; font-size:13px; color:#4a5a4a;">
+                                    <a href="${q.attachmentStream}" target="_blank" style="color:#2e7d32; font-weight:500;">📄 Open PDF in new tab</a>
+                                </p>
+                            `;
+                        }
+                    } else {
+                        certContent = `<img src="${q.attachmentStream}" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+                    }
+                } else {
+                    certContent = `<div style="padding:40px; background:#f8fcf8; border-radius:12px; text-align:center; color:#8a9a8a; border:2px dashed #dce8dc;">No certificate uploaded</div>`;
+                }
+                expPages += `
+                    <div id="exp-${idx}" class="page section-break" style="page-break-after:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
+                        <h2 style="font-size:24px; color:#1e2b1e; margin-bottom:8px; text-align:center;">${label}</h2>
+                        <p style="color:#4a5a4a; font-size:14px; margin-bottom:24px;">Work Experience Certificate</p>
+                        <div style="width:100%; max-width:700px; text-align:center;">${certContent}</div>
+                        <p style="margin-top:30px; font-size:13px; color:#8a9a8a;">— ${escapeHtml(name)} —</p>
+                    </div>
+                `;
+            });
+
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Resume - ${escapeHtml(name)}</title>
+            <style>
+                * { margin:0; padding:0; box-sizing:border-box; }
+                body { font-family: system-ui, -apple-system, sans-serif; background:white; color:#1e2b1e; }
+                .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; }
+                .cover { text-align:center; }
+                .cover .photo { margin-bottom:20px; }
+                .cover h1 { font-size:36px; font-weight:700; letter-spacing:-0.02em; }
+                .cover .details { margin: 12px 0 8px; font-size:16px; color:#4a5a4a; }
+                .cover .details span { margin: 0 6px; }
+                .cover p { color:#4a5a4a; font-size:18px; margin-top:4px; }
+                .toc { background:#f8fcf8; border-top:2px solid #dce8dc; border-bottom:2px solid #dce8dc; padding:30px; margin:20px 0; width:100%; max-width:600px; text-align:left; }
+                .toc h2 { font-size:18px; font-weight:600; margin-bottom:16px; color:#1e2b1e; }
+                .toc ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:8px; }
+                .toc ul li { padding:6px 0; border-bottom:1px solid #eef6ee; }
+                .toc ul li:last-child { border-bottom:none; }
+                .footer { text-align:center; padding:20px; color:#8a9a8a; font-size:13px; border-top:1px solid #dce8dc; margin-top:20px; width:100%; }
+                @media print { body { background:white; } .page { page-break-after:always; } }
+            </style>
+        </head>
+        <body>
+            <!-- COVER PAGE -->
+            <div class="page cover">
+                <div class="photo">${photoHtml}</div>
+                <h1>${escapeHtml(name)}</h1>
+                <div class="details">
+                    <span>Age: ${escapeHtml(age) || 'N/A'}</span> | 
+                    <span>Sex: ${escapeHtml(sex) || 'N/A'}</span> | 
+                    <span>Phone: ${escapeHtml(phone) || 'N/A'}</span> | 
+                    <span>Email: ${escapeHtml(email) || 'N/A'}</span>
+                </div>
+                <p>Professional Resume</p>
+                <div class="toc">
+                    <h2>📋 Education</h2>
+                    <ul>${eduTOC || '<li style="color:#8a9a8a;">No education listed</li>'}</ul>
+                    <h2 style="margin-top:20px;">💼 Work Experience</h2>
+                    <ul>${expTOC || '<li style="color:#8a9a8a;">No experience listed</li>'}</ul>
+                </div>
+                <div class="footer">Generated by EcoResume &bull; ${new Date().toLocaleDateString()}</div>
+            </div>
+            <!-- EDUCATION PAGES -->
+            ${eduPages || ''}
+            <!-- WORK EXPERIENCE PAGES -->
+            ${expPages || ''}
+        </body>
+        </html>`;
+        }
+
+        /* ── Generate Output ── */
+        function generateClientPack(mode) {
+            // Sync text inputs into state
+            appState.qualifications.forEach(node => {
+                const inp = document.querySelector(`#row-${node.id} .qual-text-input`);
+                if (inp) node.textData = inp.value;
+            });
+
+            const name = document.getElementById('clientNameInput').value.trim() || 'Anonymous_Record';
+            const age = document.getElementById('clientAge').value.trim();
+            const sex = document.getElementById('clientSex').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            const photo = appState.photoStreamBase64;
+
+            if (mode === 'share') {
+                // Build HTML for share (full embedded object for PDFs)
+                const fullHTML = buildFullResumeHTML(name, age, sex, phone, email, photo, appState.qualifications, false);
+                const blob = new Blob([fullHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name.replace(/\s+/g, '_')}_Portfolio.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                showToast('📄 Full HTML portfolio downloaded');
+
+            } else if (mode === 'pdf') {
+                // Build HTML for PDF with fallback for PDF attachments
+                const pdfHTML = buildFullResumeHTML(name, age, sex, phone, email, photo, appState.qualifications, true);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = pdfHTML;
+                wrapper.style.width = '750px';
+                wrapper.style.margin = '0 auto';
+                wrapper.style.background = 'white';
+                document.body.appendChild(wrapper);
+
+                const config = {
+                    margin: 10,
+                    filename: `${name.replace(/\s+/g, '_')}_Resume.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: 'css' }
+                };
+
+                showToast('⏳ Generating PDF…', 2000);
+                html2pdf().set(config).from(wrapper).save().then(() => {
+                    document.body.removeChild(wrapper);
+                    showToast('✅ PDF downloaded successfully!');
+                }).catch((err) => {
+                    console.error(err);
+                    document.body.removeChild(wrapper);
+                    showToast('❌ PDF generation failed, try again.', 3000);
+                });
+            }
+        }
+
+        // ── Close modal on overlay click / Escape ──
+        document.getElementById('previewOverlayContainer').addEventListener('click', function(e) {
+            if (e.target === this) dismissModalPreview();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') dismissModalPreview();
+        });
+    </script>
+</body>
+</html>
