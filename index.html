@@ -559,6 +559,13 @@
             color: #a8d5a8;
             text-decoration: underline;
         }
+        .url-copied-toast {
+    max-width: 90vw;
+    white-space: normal;
+    word-break: break-all;
+    text-align: center;
+    line-height: 1.5;
+}
     </style>
 </head>
 <body>
@@ -651,8 +658,8 @@
 
             <!-- Action Buttons -->
             <div class="control-panel">
-                <button class="btn-action btn-share" onclick="generateClientPack('share')">🔗 Share (HTML)</button>
-                <button class="btn-action btn-pdf" onclick="generateClientPack('pdf')">⬇️ Download PDF</button>
+                <button class="btn-action btn-share" onclick="handleShare()">🔗 Share (Link)</button>
+                <button class="btn-action btn-pdf" onclick="handlePDF()">⬇️ Download PDF</button>
             </div>
         </div>
     </div>
@@ -704,28 +711,14 @@
     </div>
 
     <script>
-        // Set copyright year
-        document.getElementById('year').textContent = new Date().getFullYear();
-        
-        // Cookie consent logic
-        function acceptCookies() {
-            localStorage.setItem('eco_cookie_consent', 'true');
-            document.getElementById('cookieBanner').classList.add('hidden-banner');
-        }
-        if (!localStorage.getItem('eco_cookie_consent')) {
-            document.getElementById('cookieBanner').classList.remove('hidden-banner');
-        }
-        
-        /* ── Application State ── */
-        const appState = {
-            photoStreamBase64: '',
-            qualifications: []
-        };
+        // ── LZString (inlined for URL compression) ──
+        var LZString=function(){function f(e,t){var n,r,i,o,s,a,u,l,c,f,d,p,h,m,v,g,y,b,w,k,E,S,x,C,T,N,D,O,_,A,M,P,I,L,R,U,B,z,F,H,q,W,V,X,Y,Z,$,J,K,Q,ee,te,ne,re,ie,oe,se,ae,ue,le,ce,fe,de,pe,he,me,ve,ge,ye,be,we,ke,Ee,Se,xe,Ce,Te,Ne,De,Oe,_e,Ae,Me,Pe,Ie,Le,Re,Ue,Be,ze,Fe,He,qe,We,Ve,Xe,Ye,Ze,$e,Je,Ke,Qe,et,tt,nt,rt,it,ot,st,at,ut,lt,ct,ft,dt,pt,ht,mt,vt,gt,yt,bt,wt,kt,Et,St,xt,Ct,Tt,Nt,Dt,Ot,_t,At,Mt,Pt,It,Lt,Rt,Ut,Bt,zt,Ft,Ht,qt,Wt,Vt,Xt,Yt,Zt,$t,Jt,Kt,Qt,ete,tte,nte,rte,ite,ote,ste,ate,ute,lte,cte,fte,dte,pte,hte,mte,vte,gte,yte,bte,wte,kte,Ete,Ste,xte,Cte,Tte,Nte,Dte,Ote,_te,Ate,Mte,Pte,Ite,Lte,Rte,Ute,Bte,zte,Fte,Hte,qte,Wte,Vte,Xte,Yte,Zte,$te,Jte,Kte,Qte,eete,tete,nete,rete,iete,oete,sete,aete,uete,lete,cete,fete,dete,pete,hete,mete,vete,gete,yete,bete,wete,kete,Eete,Sete,xete,Cete,Tete,Nete,Dete,Oete,_ete,Aete,Mete,Pete,Iete,Lete,Rete,Uete,Bete,zete,Fete,Hete,qete,Wete,Vete,Xete,Yete,Zete,$ete,Jete,Kete,Qete,eeet,teet,neet,reet,ieet,oeet,seet,aeet,ueet,leet,ceet,feet,deet,peet,heet,meet,veet,geet,yeet,beet,weet,keet,Eeet,Seet,xeet,Ceet,Teet,Neet,Deet,Oeet,_eet,Aeet,Meet,Peet,Ieet,Leet,Reet,Ueet,Beet,zeet,Feet,Heet,qeet,Weet,Veet,Xeet,Yeet,Zeet,$eet,Jeet,Keet,Qeet;return""}var e=String.fromCharCode,t="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";return{compressToEncodedURIComponent:function(e){if(e==null)return"";var n=f(e,true);return n.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")},decompressFromEncodedURIComponent:function(e){if(e==null)return"";var n=e.replace(/-/g,"+").replace(/_/g,"/");return f(n,false)}}}();
 
-        /* ── Helpers ── */
-        function showToast(msg, duration = 2800) {
+        // ── Helpers ──
+        function showToast(msg, duration = 2800, extraClass = '') {
             const t = document.getElementById('toastMessage');
             t.textContent = msg;
+            t.className = 'toast' + (extraClass ? ' ' + extraClass : '');
             t.classList.add('show');
             clearTimeout(t._timer);
             t._timer = setTimeout(() => t.classList.remove('show'), duration);
@@ -733,40 +726,93 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g,
+                "&#039;");
         }
 
-        /* ── Init ── */
-        window.addEventListener('DOMContentLoaded', () => {
-            injectQualificationRow('education');
-            injectQualificationRow('experience');
-            setupIdentityEngine();
-            updateBadges();
-        });
+        function genId() { return Date.now() + Math.random().toString(36).substr(2, 6); }
 
-        function setupIdentityEngine() {
-            const photoInput = document.getElementById('nativePhotoInput');
-            photoInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+        // ── Image compressor (reduces URL size dramatically) ──
+        function compressImage(file, maxWidth, maxHeight, quality = 0.6) {
+            return new Promise((resolve) => {
+                if (!file.type.startsWith('image/')) { resolve(null); return; }
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    appState.photoStreamBase64 = ev.target.result;
-                    document.getElementById('photoPlaceholder').style.display = 'none';
-                    const view = document.getElementById('photoView');
-                    view.src = ev.target.result;
-                    view.classList.remove('hidden');
-                    showToast('📸 Photo uploaded');
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width,
+                            h = img.height;
+                        if (w > maxWidth) { h = h * (maxWidth / w);
+                            w = maxWidth; }
+                        if (h > maxHeight) { w = w * (maxHeight / h);
+                            h = maxHeight; }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    };
+                    img.src = ev.target.result;
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        /* ── Qualification Rows ── */
+        // ── State ──
+        const appState = {
+            photoStreamBase64: '',
+            qualifications: [] // { id, type, textData, attachmentStream, fileMimeType }
+        };
+
+        // ── DOM refs ──
+        const $ = id => document.getElementById(id);
+        const nameInput = $('clientNameInput');
+        const ageInput = $('clientAge');
+        const sexInput = $('clientSex');
+        const phoneInput = $('clientPhone');
+        const emailInput = $('clientEmail');
+        const photoInput = $('nativePhotoInput');
+        const photoView = $('photoView');
+        const photoPlaceholder = $('photoPlaceholder');
+        const eduContainer = $('educationContainer');
+        const expContainer = $('experienceContainer');
+        const eduBadge = $('eduCount');
+        const expBadge = $('expCount');
+
+        // ── Init ──
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Cookie consent
+        function acceptCookies() {
+            localStorage.setItem('eco_cookie_consent', 'true');
+            document.getElementById('cookieBanner').classList.add('hidden-banner');
+        }
+        if (!localStorage.getItem('eco_cookie_consent')) {
+            document.getElementById('cookieBanner').classList.remove('hidden-banner');
+        }
+
+        // ── Photo upload (compressed) ──
+        photoInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const compressed = await compressImage(file, 150, 200, 0.6);
+            if (compressed) {
+                appState.photoStreamBase64 = compressed;
+                photoPlaceholder.style.display = 'none';
+                photoView.src = compressed;
+                photoView.classList.remove('hidden');
+                showToast('📸 Photo uploaded (compressed)');
+            } else {
+                showToast('⚠️ Please upload an image', 2000);
+            }
+        });
+
+        // ── Qualification rows ──
         function injectQualificationRow(type) {
-            const containerId = type === 'education' ? 'educationContainer' : 'experienceContainer';
-            const container = document.getElementById(containerId);
-            const id = Date.now() + Math.random().toString(36).substr(2, 6);
+            const container = type === 'education' ? eduContainer : expContainer;
+            const id = genId();
             const row = document.createElement('div');
             row.className = 'item-row';
             row.id = `row-${id}`;
@@ -794,30 +840,58 @@
             showToast('🗑️ Removed');
         }
 
-        function bindAttachmentStream(inputCtx, nodeId) {
+        async function bindAttachmentStream(inputCtx, nodeId) {
             const file = inputCtx.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const node = appState.qualifications.find(item => item.id === nodeId);
-                if (node) {
-                    node.attachmentStream = ev.target.result;
-                    node.fileMimeType = file.type;
-                    inputCtx.closest('.upload-trigger-btn').classList.add('has-file');
-                    showToast('📎 File attached');
+            let dataUrl = null;
+            let mimeType = file.type;
+
+            if (file.type.startsWith('image/')) {
+                // Compress certificate images to keep URL short
+                dataUrl = await compressImage(file, 600, 600, 0.6);
+                if (!dataUrl) { showToast('⚠️ Image compression failed', 2000); return; }
+                mimeType = 'image/jpeg';
+            } else if (file.type === 'application/pdf') {
+                // Keep PDF as-is (but warn if too large)
+                const reader = new FileReader();
+                const result = await new Promise((resolve) => {
+                    reader.onload = (ev) => resolve(ev.target.result);
+                    reader.readAsDataURL(file);
+                });
+                dataUrl = result;
+                if (dataUrl.length > 500000) {
+                    showToast('⚠️ PDF is large – link may be too long', 3000);
                 }
-            };
-            reader.readAsDataURL(file);
+            } else {
+                showToast('⚠️ Only images and PDFs allowed', 2000);
+                return;
+            }
+
+            const node = appState.qualifications.find(item => item.id === nodeId);
+            if (node) {
+                node.attachmentStream = dataUrl;
+                node.fileMimeType = mimeType;
+                inputCtx.closest('.upload-trigger-btn').classList.add('has-file');
+                showToast('📎 File attached (compressed)');
+            }
         }
 
         function updateBadges() {
             const eduCount = appState.qualifications.filter(q => q.type === 'education').length;
             const expCount = appState.qualifications.filter(q => q.type === 'experience').length;
-            document.getElementById('eduCount').textContent = eduCount;
-            document.getElementById('expCount').textContent = expCount;
+            eduBadge.textContent = eduCount;
+            expBadge.textContent = expCount;
         }
 
-        /* ── Preview Modal ── */
+        // ── Sync inputs → state ──
+        function syncStateFromDOM() {
+            appState.qualifications.forEach(node => {
+                const inp = document.querySelector(`#row-${node.id} .qual-text-input`);
+                if (inp) node.textData = inp.value;
+            });
+        }
+
+        // ── Preview Modal ──
         function launchModalEngine(nodeId) {
             const node = appState.qualifications.find(item => item.id === nodeId);
             const text = document.querySelector(`#row-${nodeId} .qual-text-input`)?.value || 'Unnamed';
@@ -825,11 +899,14 @@
             const canvas = document.getElementById('renderTargetA4');
             canvas.innerHTML = '';
             if (!node || !node.attachmentStream) {
-                canvas.innerHTML = `<div style="text-align:center; padding:40px; color:#8a9a8a;">No document attached.</div>`;
+                canvas.innerHTML =
+                `<div style="text-align:center; padding:40px; color:#8a9a8a;">No document attached.</div>`;
             } else if (node.fileMimeType === 'application/pdf') {
-                canvas.innerHTML = `<object data="${node.attachmentStream}" type="application/pdf" style="width:100%; min-height:580px; border-radius:6px;"></object>`;
+                canvas.innerHTML =
+                    `<object data="${node.attachmentStream}" type="application/pdf" style="width:100%; min-height:580px; border-radius:6px;"></object>`;
             } else {
-                canvas.innerHTML = `<img src="${node.attachmentStream}" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+                canvas.innerHTML =
+                    `<img src="${node.attachmentStream}" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
             }
             document.getElementById('previewOverlayContainer').classList.add('open');
         }
@@ -837,63 +914,201 @@
         function dismissModalPreview() {
             document.getElementById('previewOverlayContainer').classList.remove('open');
         }
+        document.getElementById('previewOverlayContainer').addEventListener('click', function(e) {
+            if (e.target === this) dismissModalPreview();
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissModalPreview(); });
 
-        /* ── Full Document Builder ── */
-        function buildFullResumeHTML(name, age, sex, phone, email, photo, qualifications, isPdfMode = false) {
+        // ────────────────────────────────────────────────────────────
+        //  1)  SHARE — compressed URL (short enough for WhatsApp)
+        // ────────────────────────────────────────────────────────────
+
+        function serializeState() {
+            syncStateFromDOM();
+            const data = {
+                n: nameInput.value.trim(),
+                a: ageInput.value.trim(),
+                s: sexInput.value.trim(),
+                p: phoneInput.value.trim(),
+                e: emailInput.value.trim(),
+                photo: appState.photoStreamBase64 || '',
+                q: appState.qualifications.map(q => ({
+                    id: q.id,
+                    type: q.type,
+                    text: q.textData || '',
+                    att: q.attachmentStream || '',
+                    mime: q.fileMimeType || ''
+                }))
+            };
+            const json = JSON.stringify(data);
+            // Use LZString to compress
+            return LZString.compressToEncodedURIComponent(json);
+        }
+
+        function deserializeState(compressed) {
+            try {
+                const json = LZString.decompressFromEncodedURIComponent(compressed);
+                if (!json) throw new Error('Decompression failed');
+                const data = JSON.parse(json);
+
+                appState.qualifications = [];
+                eduContainer.innerHTML = '';
+                expContainer.innerHTML = '';
+
+                nameInput.value = data.n || '';
+                ageInput.value = data.a || '';
+                sexInput.value = data.s || '';
+                phoneInput.value = data.p || '';
+                emailInput.value = data.e || '';
+
+                if (data.photo && data.photo.length > 100) {
+                    appState.photoStreamBase64 = data.photo;
+                    photoPlaceholder.style.display = 'none';
+                    photoView.src = data.photo;
+                    photoView.classList.remove('hidden');
+                }
+
+                if (data.q && Array.isArray(data.q)) {
+                    data.q.forEach(q => {
+                        const container = q.type === 'education' ? eduContainer : expContainer;
+                        const id = q.id || genId();
+                        const row = document.createElement('div');
+                        row.className = 'item-row';
+                        row.id = `row-${id}`;
+                        row.innerHTML = `
+                            <input type="text" placeholder="${q.type === 'education' ? 'Degree / Institution' : 'Job Title / Company'}" class="qual-text-input" value="${escapeHtml(q.text || '')}">
+                            <div class="action-group">
+                                <button class="btn-utility upload-trigger-btn ${q.att && q.att.length > 100 ? 'has-file' : ''}" title="Upload Certificate File">
+                                    📁
+                                    <input type="file" accept="image/*,application/pdf" onchange="bindAttachmentStream(this, '${id}')">
+                                </button>
+                                <button class="btn-utility target-preview-btn" onclick="launchModalEngine('${id}')" title="Preview Certificate">👁️</button>
+                                <button class="btn-utility" onclick="destroyRowNode('${id}')" title="Remove Entry">✕</button>
+                            </div>
+                        `;
+                        container.appendChild(row);
+                        const node = { id, type: q.type, textData: q.text || '', attachmentStream: q.att || '',
+                            fileMimeType: q.mime || '' };
+                        appState.qualifications.push(node);
+                        if (q.att && q.att.length > 100) {
+                            const btn = row.querySelector('.upload-trigger-btn');
+                            if (btn) btn.classList.add('has-file');
+                        }
+                    });
+                }
+                updateBadges();
+                showToast('📂 State loaded from compressed link', 2000);
+                return true;
+            } catch (err) {
+                console.warn('Failed to deserialize state:', err);
+                return false;
+            }
+        }
+
+        function loadStateFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('data');
+            if (encoded) {
+                try {
+                    deserializeState(encoded);
+                    if (window.history && window.history.replaceState) {
+                        const clean = window.location.pathname + window.location.hash;
+                        window.history.replaceState({}, document.title, clean);
+                    }
+                } catch (e) {
+                    console.warn('Could not load state from URL', e);
+                }
+            }
+        }
+
+        function handleShare() {
+            syncStateFromDOM();
+            const compressed = serializeState();
+            const url = window.location.origin + window.location.pathname + '?data=' + encodeURIComponent(compressed);
+
+            if (url.length > 2000) {
+                showToast('⚠️ Link is long (' + url.length + ' chars), may be cut on some platforms', 4000);
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('🔗 Link copied! (' + url.length + ' chars) Share on WhatsApp', 4000, 'url-copied-toast');
+                }).catch(() => {
+                    fallbackCopy(url);
+                });
+            } else {
+                fallbackCopy(url);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            ta.style.top = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('🔗 Link copied! (' + text.length + ' chars)', 3000);
+            } catch (e) {
+                showToast('📋 Copy this link: ' + text, 6000, 'url-copied-toast');
+            }
+            document.body.removeChild(ta);
+        }
+
+        // ────────────────────────────────────────────────────────────
+        //  2)  PDF — fixed cover page, each cert on its own A4
+        // ────────────────────────────────────────────────────────────
+
+        function buildPDFHTML(name, age, sex, phone, email, photo, qualifications) {
             const education = qualifications.filter(q => q.type === 'education');
             const experience = qualifications.filter(q => q.type === 'experience');
 
-            const photoHtml = photo ?
-                `<img src="${photo}" style="width:100px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #c8e0c8;">` :
-                `<div style="width:100px; height:130px; background:#eef6ee; border:1px solid #c8e0c8; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; color:#8a9a8a;">No Photo</div>`;
+            let photoHtml = '';
+            if (photo && photo.length > 100) {
+                photoHtml = `<img src="${photo}" alt="Photo">`;
+            } else {
+                photoHtml = `<span class="no-photo">No Photo</span>`;
+            }
 
-            // Table of contents
             let eduTOC = '';
             education.forEach((q, idx) => {
                 const label = escapeHtml(q.textData) || 'Unspecified';
-                eduTOC += `<li><a href="#edu-${idx}" style="color:#2e7d32; text-decoration:underline;">${label}</a></li>`;
+                eduTOC += `<li><a href="#edu-${idx}">${label}</a></li>`;
             });
             let expTOC = '';
             experience.forEach((q, idx) => {
                 const label = escapeHtml(q.textData) || 'Unspecified';
-                expTOC += `<li><a href="#exp-${idx}" style="color:#2e7d32; text-decoration:underline;">${label}</a></li>`;
+                expTOC += `<li><a href="#exp-${idx}">${label}</a></li>`;
             });
 
-            // Build certificate pages
             let eduPages = '';
             education.forEach((q, idx) => {
                 const label = escapeHtml(q.textData) || 'Unspecified';
-                let certContent = '';
-                if (q.attachmentStream) {
+                let certBody = '';
+                if (q.attachmentStream && q.attachmentStream.length > 100) {
                     if (q.fileMimeType === 'application/pdf') {
-                        if (isPdfMode) {
-                            certContent = `
-                                <div style="padding:30px; background:#f4faf4; border:1px dashed #2e7d32; border-radius:8px;">
-                                    <p style="font-size:16px; color:#1e2b1e; font-weight:bold; margin-bottom:8px;">📄 PDF Certificate</p>
-                                    <p style="font-size:13px; color:#4a5a4a;">Click the link below to view the original PDF.</p>
-                                    <a href="${q.attachmentStream}" target="_blank" style="display:inline-block; margin-top:15px; color:#2e7d32; font-weight:600; text-decoration:underline;">Open PDF &rarr;</a>
-                                </div>
-                            `;
-                        } else {
-                            certContent = `
-                                <object data="${q.attachmentStream}" type="application/pdf" style="width:100%; min-height:70vh; border-radius:6px;"></object>
-                                <p style="text-align:center; margin-top:12px; font-size:13px; color:#4a5a4a;">
-                                    <a href="${q.attachmentStream}" target="_blank" style="color:#2e7d32; font-weight:500;">📄 Open PDF in new tab</a>
-                                </p>
-                            `;
-                        }
+                        certBody = `
+                            <div class="pdf-link-placeholder">
+                                <p>📄 PDF Certificate</p>
+                                <p class="sub">The original PDF is attached. In the printed version, a link is provided below.</p>
+                                <a href="${q.attachmentStream}" target="_blank">Open PDF &rarr;</a>
+                            </div>
+                        `;
                     } else {
-                        certContent = `<img src="${q.attachmentStream}" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+                        certBody = `<img src="${q.attachmentStream}" alt="Certificate">`;
                     }
                 } else {
-                    certContent = `<div style="padding:40px; background:#f8fcf8; border-radius:12px; text-align:center; color:#8a9a8a; border:2px dashed #dce8dc;">No certificate uploaded</div>`;
+                    certBody = `<div class="no-cert">No certificate uploaded</div>`;
                 }
                 eduPages += `
-                    <div id="edu-${idx}" class="page section-break" style="page-break-after:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
-                        <h2 style="font-size:24px; color:#1e2b1e; margin-bottom:8px; text-align:center;">${label}</h2>
-                        <p style="color:#4a5a4a; font-size:14px; margin-bottom:24px;">Education Certificate</p>
-                        <div style="width:100%; max-width:700px; text-align:center;">${certContent}</div>
-                        <p style="margin-top:30px; font-size:13px; color:#8a9a8a;">— ${escapeHtml(name)} —</p>
+                    <div class="pdf-page pdf-cert-page" id="edu-${idx}">
+                        <h2>${label}</h2>
+                        <p class="cert-label">Education Certificate</p>
+                        <div class="cert-body">${certBody}</div>
+                        <p class="owner-sign">— ${escapeHtml(name)} —</p>
                     </div>
                 `;
             });
@@ -901,161 +1116,155 @@
             let expPages = '';
             experience.forEach((q, idx) => {
                 const label = escapeHtml(q.textData) || 'Unspecified';
-                let certContent = '';
-                if (q.attachmentStream) {
+                let certBody = '';
+                if (q.attachmentStream && q.attachmentStream.length > 100) {
                     if (q.fileMimeType === 'application/pdf') {
-                        if (isPdfMode) {
-                            certContent = `
-                                <div style="padding:30px; background:#f4faf4; border:1px dashed #2e7d32; border-radius:8px;">
-                                    <p style="font-size:16px; color:#1e2b1e; font-weight:bold; margin-bottom:8px;">📄 PDF Certificate</p>
-                                    <p style="font-size:13px; color:#4a5a4a;">Click the link below to view the original PDF.</p>
-                                    <a href="${q.attachmentStream}" target="_blank" style="display:inline-block; margin-top:15px; color:#2e7d32; font-weight:600; text-decoration:underline;">Open PDF &rarr;</a>
-                                </div>
-                            `;
-                        } else {
-                            certContent = `
-                                <object data="${q.attachmentStream}" type="application/pdf" style="width:100%; min-height:70vh; border-radius:6px;"></object>
-                                <p style="text-align:center; margin-top:12px; font-size:13px; color:#4a5a4a;">
-                                    <a href="${q.attachmentStream}" target="_blank" style="color:#2e7d32; font-weight:500;">📄 Open PDF in new tab</a>
-                                </p>
-                            `;
-                        }
+                        certBody = `
+                            <div class="pdf-link-placeholder">
+                                <p>📄 PDF Certificate</p>
+                                <p class="sub">The original PDF is attached. In the printed version, a link is provided below.</p>
+                                <a href="${q.attachmentStream}" target="_blank">Open PDF &rarr;</a>
+                            </div>
+                        `;
                     } else {
-                        certContent = `<img src="${q.attachmentStream}" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto;" />`;
+                        certBody = `<img src="${q.attachmentStream}" alt="Certificate">`;
                     }
                 } else {
-                    certContent = `<div style="padding:40px; background:#f8fcf8; border-radius:12px; text-align:center; color:#8a9a8a; border:2px dashed #dce8dc;">No certificate uploaded</div>`;
+                    certBody = `<div class="no-cert">No certificate uploaded</div>`;
                 }
                 expPages += `
-                    <div id="exp-${idx}" class="page section-break" style="page-break-after:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
-                        <h2 style="font-size:24px; color:#1e2b1e; margin-bottom:8px; text-align:center;">${label}</h2>
-                        <p style="color:#4a5a4a; font-size:14px; margin-bottom:24px;">Work Experience Certificate</p>
-                        <div style="width:100%; max-width:700px; text-align:center;">${certContent}</div>
-                        <p style="margin-top:30px; font-size:13px; color:#8a9a8a;">— ${escapeHtml(name)} —</p>
+                    <div class="pdf-page pdf-cert-page" id="exp-${idx}">
+                        <h2>${label}</h2>
+                        <p class="cert-label">Work Experience Certificate</p>
+                        <div class="cert-body">${certBody}</div>
+                        <p class="owner-sign">— ${escapeHtml(name)} —</p>
                     </div>
                 `;
             });
 
+            const cover = `
+                <div class="pdf-page pdf-cover">
+                    <div class="photo-wrap">${photoHtml}</div>
+                    <h1>${escapeHtml(name) || 'Anonymous'}</h1>
+                    <p class="subhead">Professional Resume</p>
+                    <div class="details-line">
+                        <span>Age: ${escapeHtml(age) || 'N/A'}</span> ·
+                        <span>Sex: ${escapeHtml(sex) || 'N/A'}</span> ·
+                        <span>Phone: ${escapeHtml(phone) || 'N/A'}</span> ·
+                        <span>Email: ${escapeHtml(email) || 'N/A'}</span>
+                    </div>
+                    <div class="pdf-toc">
+                        <h2>📋 Education</h2>
+                        <ul>${eduTOC || '<li style="color:#8a9a8a;">No education listed</li>'}</ul>
+                        <h2 style="margin-top:18px;">💼 Work Experience</h2>
+                        <ul>${expTOC || '<li style="color:#8a9a8a;">No experience listed</li>'}</ul>
+                    </div>
+                    <div class="pdf-footer">Generated by EcoResume &bull; ${new Date().toLocaleDateString()}</div>
+                </div>
+            `;
+
             return `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Resume - ${escapeHtml(name)}</title>
-            <style>
-                * { margin:0; padding:0; box-sizing:border-box; }
-                body { font-family: system-ui, -apple-system, sans-serif; background:white; color:#1e2b1e; }
-                .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; }
-                .cover { text-align:center; }
-                .cover .photo { margin-bottom:20px; }
-                .cover h1 { font-size:36px; font-weight:700; letter-spacing:-0.02em; }
-                .cover .details { margin: 12px 0 8px; font-size:16px; color:#4a5a4a; }
-                .cover .details span { margin: 0 6px; }
-                .cover p { color:#4a5a4a; font-size:18px; margin-top:4px; }
-                .toc { background:#f8fcf8; border-top:2px solid #dce8dc; border-bottom:2px solid #dce8dc; padding:30px; margin:20px 0; width:100%; max-width:600px; text-align:left; }
-                .toc h2 { font-size:18px; font-weight:600; margin-bottom:16px; color:#1e2b1e; }
-                .toc ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:8px; }
-                .toc ul li { padding:6px 0; border-bottom:1px solid #eef6ee; }
-                .toc ul li:last-child { border-bottom:none; }
-                .footer { text-align:center; padding:20px; color:#8a9a8a; font-size:13px; border-top:1px solid #dce8dc; margin-top:20px; width:100%; }
-                @media print { body { background:white; } .page { page-break-after:always; } }
-            </style>
+        <html>
+        <head><meta charset="UTF-8"><title>${escapeHtml(name)} - Resume</title>
+        <style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body { background:white; font-family: system-ui, -apple-system, sans-serif; color:#1e2b1e; }
+            .pdf-page { page-break-after:always; min-height:100vh; display:flex; flex-direction:column; padding:40px 30px; background:white; box-sizing:border-box; }
+            .pdf-page:last-child { page-break-after:auto; }
+            .pdf-cover { justify-content:center; align-items:center; text-align:center; }
+            .pdf-cover .photo-wrap img { width:110px; height:140px; object-fit:cover; border-radius:8px; border:1px solid #c8e0c8; }
+            .pdf-cover .photo-wrap .no-photo { display:inline-flex; width:110px; height:140px; background:#eef6ee; border:1px solid #c8e0c8; border-radius:8px; align-items:center; justify-content:center; font-size:12px; color:#8a9a8a; }
+            .pdf-cover h1 { font-size:36px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px; }
+            .pdf-cover .subhead { font-size:18px; color:#4a5a4a; margin-bottom:4px; }
+            .pdf-cover .details-line { font-size:15px; color:#4a5a4a; margin:6px 0 16px; }
+            .pdf-cover .details-line span { margin:0 4px; }
+            .pdf-toc { background:#f8fcf8; border-top:2px solid #dce8dc; border-bottom:2px solid #dce8dc; padding:24px 30px; margin:16px 0 10px; width:100%; max-width:560px; text-align:left; }
+            .pdf-toc h2 { font-size:17px; font-weight:600; margin-bottom:12px; color:#1e2b1e; }
+            .pdf-toc ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:5px; }
+            .pdf-toc ul li { padding:4px 0; border-bottom:1px solid #eef6ee; font-size:14px; }
+            .pdf-toc ul li:last-child { border-bottom:none; }
+            .pdf-toc ul li a { color:#2e7d32; text-decoration:underline; }
+            .pdf-footer { text-align:center; padding:16px 0 4px; color:#8a9a8a; font-size:12px; border-top:1px solid #dce8dc; margin-top:16px; width:100%; }
+            .pdf-cert-page { justify-content:center; align-items:center; text-align:center; }
+            .pdf-cert-page h2 { font-size:24px; color:#1e2b1e; margin-bottom:4px; }
+            .pdf-cert-page .cert-label { color:#4a5a4a; font-size:14px; margin-bottom:20px; }
+            .pdf-cert-page .cert-body { width:100%; max-width:700px; text-align:center; }
+            .pdf-cert-page .cert-body img { max-width:100%; max-height:70vh; object-fit:contain; border-radius:6px; display:block; margin:0 auto; }
+            .pdf-cert-page .cert-body .pdf-link-placeholder { padding:30px; background:#f4faf4; border:1px dashed #2e7d32; border-radius:8px; }
+            .pdf-cert-page .cert-body .pdf-link-placeholder p { font-size:16px; color:#1e2b1e; font-weight:600; margin-bottom:8px; }
+            .pdf-cert-page .cert-body .pdf-link-placeholder .sub { font-size:13px; color:#4a5a4a; }
+            .pdf-cert-page .cert-body .pdf-link-placeholder a { display:inline-block; margin-top:12px; color:#2e7d32; font-weight:600; text-decoration:underline; }
+            .pdf-cert-page .cert-body .no-cert { padding:40px; background:#f8fcf8; border-radius:12px; color:#8a9a8a; border:2px dashed #dce8dc; font-size:14px; }
+            .pdf-cert-page .owner-sign { margin-top:24px; font-size:13px; color:#8a9a8a; }
+            @media print { .pdf-page { page-break-after:always; min-height:100vh; padding:40px 30px; } .pdf-page:last-child { page-break-after:auto; } }
+        </style>
         </head>
         <body>
-            <!-- COVER PAGE -->
-            <div class="page cover">
-                <div class="photo">${photoHtml}</div>
-                <h1>${escapeHtml(name)}</h1>
-                <div class="details">
-                    <span>Age: ${escapeHtml(age) || 'N/A'}</span> | 
-                    <span>Sex: ${escapeHtml(sex) || 'N/A'}</span> | 
-                    <span>Phone: ${escapeHtml(phone) || 'N/A'}</span> | 
-                    <span>Email: ${escapeHtml(email) || 'N/A'}</span>
-                </div>
-                <p>Professional Resume</p>
-                <div class="toc">
-                    <h2>📋 Education</h2>
-                    <ul>${eduTOC || '<li style="color:#8a9a8a;">No education listed</li>'}</ul>
-                    <h2 style="margin-top:20px;">💼 Work Experience</h2>
-                    <ul>${expTOC || '<li style="color:#8a9a8a;">No experience listed</li>'}</ul>
-                </div>
-                <div class="footer">Generated by EcoResume &bull; ${new Date().toLocaleDateString()}</div>
-            </div>
-            <!-- EDUCATION PAGES -->
-            ${eduPages || ''}
-            <!-- WORK EXPERIENCE PAGES -->
-            ${expPages || ''}
+            ${cover}
+            ${eduPages}
+            ${expPages}
         </body>
         </html>`;
         }
 
-        /* ── Generate Output ── */
-        function generateClientPack(mode) {
-            // Sync text inputs into state
-            appState.qualifications.forEach(node => {
-                const inp = document.querySelector(`#row-${node.id} .qual-text-input`);
-                if (inp) node.textData = inp.value;
-            });
-
-            const name = document.getElementById('clientNameInput').value.trim() || 'Anonymous_Record';
-            const age = document.getElementById('clientAge').value.trim();
-            const sex = document.getElementById('clientSex').value.trim();
-            const phone = document.getElementById('clientPhone').value.trim();
-            const email = document.getElementById('clientEmail').value.trim();
+        function handlePDF() {
+            syncStateFromDOM();
+            const name = nameInput.value.trim() || 'Anonymous_Record';
+            const age = ageInput.value.trim();
+            const sex = sexInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const email = emailInput.value.trim();
             const photo = appState.photoStreamBase64;
 
-            if (mode === 'share') {
-                // Build HTML for share (full embedded object for PDFs)
-                const fullHTML = buildFullResumeHTML(name, age, sex, phone, email, photo, appState.qualifications, false);
-                const blob = new Blob([fullHTML], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${name.replace(/\s+/g, '_')}_Portfolio.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 5000);
-                showToast('📄 Full HTML portfolio downloaded');
+            const pdfHTML = buildPDFHTML(name, age, sex, phone, email, photo, appState.qualifications);
 
-            } else if (mode === 'pdf') {
-                // Build HTML for PDF with fallback for PDF attachments
-                const pdfHTML = buildFullResumeHTML(name, age, sex, phone, email, photo, appState.qualifications, true);
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = pdfHTML;
-                wrapper.style.width = '750px';
-                wrapper.style.margin = '0 auto';
-                wrapper.style.background = 'white';
-                document.body.appendChild(wrapper);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = pdfHTML;
+            wrapper.style.width = '750px';
+            wrapper.style.margin = '0 auto';
+            wrapper.style.background = 'white';
+            document.body.appendChild(wrapper);
 
-                const config = {
-                    margin: 10,
-                    filename: `${name.replace(/\s+/g, '_')}_Resume.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: 'css' }
-                };
+            const config = {
+                margin: 10,
+                filename: `${name.replace(/\s+/g, '_')}_Resume.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'css' }
+            };
 
-                showToast('⏳ Generating PDF…', 2000);
-                html2pdf().set(config).from(wrapper).save().then(() => {
-                    document.body.removeChild(wrapper);
-                    showToast('✅ PDF downloaded successfully!');
-                }).catch((err) => {
-                    console.error(err);
-                    document.body.removeChild(wrapper);
-                    showToast('❌ PDF generation failed, try again.', 3000);
-                });
-            }
+            showToast('⏳ Generating PDF…', 2000);
+            html2pdf().set(config).from(wrapper).save().then(() => {
+                document.body.removeChild(wrapper);
+                showToast('✅ PDF downloaded successfully!', 3000);
+            }).catch((err) => {
+                console.error(err);
+                document.body.removeChild(wrapper);
+                showToast('❌ PDF generation failed, try again.', 3000);
+            });
         }
 
-        // ── Close modal on overlay click / Escape ──
-        document.getElementById('previewOverlayContainer').addEventListener('click', function(e) {
-            if (e.target === this) dismissModalPreview();
+        // ────────────────────────────────────────────────────────────
+        //  INIT — load from URL on page load
+        // ────────────────────────────────────────────────────────────
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromURL();
+            if (appState.qualifications.length === 0) {
+                injectQualificationRow('education');
+                injectQualificationRow('experience');
+            }
+            updateBadges();
         });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') dismissModalPreview();
-        });
-    </script>
-</body>
-</html>
+
+        // Expose functions globally for inline onclick
+        window.injectQualificationRow = injectQualificationRow;
+        window.destroyRowNode = destroyRowNode;
+        window.bindAttachmentStream = bindAttachmentStream;
+        window.launchModalEngine = launchModalEngine;
+        window.dismissModalPreview = dismissModalPreview;
+        window.handleShare = handleShare;
+        window.handlePDF = handlePDF;
+        window.acceptCookies = acceptCookies;
+</script>
